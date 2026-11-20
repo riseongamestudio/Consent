@@ -1,0 +1,18 @@
+{
+    "name": "RiseOn.Consent.Platforms.IOS",
+    "rootNamespace": "RiseOn.Consent.Platforms.IOS",
+    "references": [
+        "RiseOn.Consent"
+    ],
+    "includePlatforms": [
+        "iOS"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Google's UMP, declared the way AppLovin's plugin declares it for its consent flow; the consent flow calls it through this package's own bridge. -->
+<dependencies>
+  <androidPackages>
+    <androidPackage spec="com.google.android.ump:user-messaging-platform:4.0.0" />
+  </androidPackages>
+  <iosPods>
+    <iosPod name="GoogleUserMessagingPlatform" version="~> 3.1" />
+  </iosPods>
+</dependencies>

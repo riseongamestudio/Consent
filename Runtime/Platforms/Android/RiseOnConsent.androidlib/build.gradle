@@ -1,0 +1,27 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace "com.riseon.consent"
+    compileSdkVersion 34
+
+    defaultConfig {
+        minSdkVersion 24
+        targetSdkVersion 34
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    // compileOnly: RiseOnConsentDependencies.xml asks the External Dependency Manager for UMP, so the app packages it
+    // once; keep the version in step with that file.
+    compileOnly "com.google.android.ump:user-messaging-platform:4.0.0"
+}

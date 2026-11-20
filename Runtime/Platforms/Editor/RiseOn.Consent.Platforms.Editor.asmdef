@@ -1,0 +1,18 @@
+{
+    "name": "RiseOn.Consent.Platforms.Editor",
+    "rootNamespace": "RiseOn.Consent.Platforms.Editor",
+    "references": [
+        "RiseOn.Consent"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
