@@ -1,0 +1,16 @@
+{
+    "name": "RiseOn.Consent.Requirements",
+    "rootNamespace": "RiseOn.Consent.Requirements",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

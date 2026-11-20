@@ -57,7 +57,7 @@ bỏ qua; registry nào khai scope cụ thể hơn (ví dụ `com.google.firebas
 rồi thêm gói vào `dependencies`:
 
 ```json
-"com.riseon.consent": "1.0.0"
+"com.riseon.consent": "1.0.1"
 ```
 
 ## Luồng
