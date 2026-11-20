@@ -28,7 +28,9 @@ namespace RiseOn.Consent.Editor.Adapters {
         }
 
         /// <summary>The asset's serialized field, or null when the asset or the field is missing.</summary>
-        protected static SerializedProperty Field(SerializedObject asset, string name) => asset?.FindProperty(name);
+        protected static SerializedProperty Field(SerializedObject asset, string name) {
+            return asset?.FindProperty(name);
+        }
 
         protected static SerializedObject Load(string assetPath) {
             var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
@@ -44,12 +46,14 @@ namespace RiseOn.Consent.Editor.Adapters {
             return null;
         }
 
-        protected static Action Set(SerializedObject asset, string field, string value) => () => {
-            asset.Update();
-            asset.FindProperty(field).stringValue = value;
-            asset.ApplyModifiedPropertiesWithoutUndo();
-            AssetDatabase.SaveAssetIfDirty(asset.targetObject);
-        };
+        protected static Action Set(SerializedObject asset, string field, string value) {
+            return () => {
+                asset.Update();
+                asset.FindProperty(field).stringValue = value;
+                asset.ApplyModifiedPropertiesWithoutUndo();
+                AssetDatabase.SaveAssetIfDirty(asset.targetObject);
+            };
+        }
 
         /// <summary>Writes Consent's app ids into the plugin's two fields, saving the file only when either changes.</summary>
         protected static void SyncAppIds(SerializedObject asset, string android, string ios, ConsentSettings settings, bool emptyOnly) {
@@ -94,7 +98,9 @@ namespace RiseOn.Consent.Editor.Adapters {
             yield return new SettingsIssue(target, true, $"{Name} has AdMob {platform} app id {theirs}, the project's is {Quote(consent)} ({where}).", "Use it", () => ConsentAppIdField.Set(target, theirs));
         }
 
-        private static string Quote(string value) => value.Length == 0 ? "empty" : value;
+        private static string Quote(string value) {
+            return value.Length == 0 ? "empty" : value;
+        }
     }
 
 }

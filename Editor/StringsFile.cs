@@ -85,6 +85,8 @@ namespace RiseOn.Consent.Editor {
         }
 
         // A whole `"key" = "value";` line, the key quoted or bare, the value spanning lines when it holds newlines.
-        private static Regex Line(string key) => new($"^[ \\t]*(?:\"{Regex.Escape(key)}\"|{Regex.Escape(key)})[ \\t]*=[ \\t]*\"((?:[^\"\\\\]|\\\\.)*)\"[ \\t]*;[^\\S\\n]*\\n?", RegexOptions.Multiline);
+        private static Regex Line(string key) {
+            return new($"^[ \\t]*(?:\"{Regex.Escape(key)}\"|{Regex.Escape(key)})[ \\t]*=[ \\t]*\"((?:[^\"\\\\]|\\\\.)*)\"[ \\t]*;[^\\S\\n]*\\n?", RegexOptions.Multiline);
+        }
     }
 }

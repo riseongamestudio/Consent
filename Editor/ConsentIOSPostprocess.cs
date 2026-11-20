@@ -155,7 +155,7 @@ namespace RiseOn.Consent.Editor {
             foreach (var entry in XcodeResources.Copied(pbxproj, resourcesPhase, StringsName)) {
                 var file   = entry.Folder ? entry.Path + "/" + StringsName : entry.Path;
                 var folder = Path.GetFileName(Path.GetDirectoryName(file) ?? "");
-                if (Path.GetFileName(file) != StringsName || !folder.EndsWith(".lproj", StringComparison.OrdinalIgnoreCase)) continue;
+                if (Path.GetFileName(file) is not StringsName || !folder.EndsWith(".lproj", StringComparison.OrdinalIgnoreCase)) continue;
                 if (entry.Folder && !File.Exists(Path.Combine(buildPath, file))) continue;
 
                 var key = TrackingPrompts.Key(folder[..^".lproj".Length]);

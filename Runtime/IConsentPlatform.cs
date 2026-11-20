@@ -40,13 +40,14 @@ namespace RiseOn.Consent {
         }
 
         /// <summary>The kinds the native bridges report, by ordinal: 0 is no error.</summary>
-        public static ConsentException Error(int kind, string message) =>
-            kind switch {
+        public static ConsentException Error(int kind, string message) {
+            return kind switch {
                 0 => null
               , 1 => new ConsentException(ConsentErrorKind.Network, message)
               , 2 => new ConsentException(ConsentErrorKind.Misconfiguration, message)
               , 3 => new ConsentException(ConsentErrorKind.Internal, message)
               , _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, message)
             };
+        }
     }
 }

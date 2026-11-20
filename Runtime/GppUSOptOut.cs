@@ -51,7 +51,7 @@ namespace RiseOn.Consent {
 
                 var core = Bits(parts[i + 1].Split('.')[0]);
                 foreach (var offset in offsets) {
-                    if (offset >= 0 && offset + 2 <= core.Length && Int(core, offset, 2) == OptedOut) return true;
+                    if (offset >= 0 && offset + 2 <= core.Length && Int(core, offset, 2) is OptedOut) return true;
                 }
             }
 

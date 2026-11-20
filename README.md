@@ -19,46 +19,61 @@ và iOS; build cho nền tảng khác bị dừng.
 - [Khi build](#khi-build)
 - [`ConsentState`](#consentstate)
 - [Thử form](#thử-form)
+- [Lịch sử thay đổi](#lịch-sử-thay-đổi)
 - [Giấy phép](#giấy-phép)
 
 ## Yêu cầu
 
 | Phụ thuộc | Cách có | Dùng cho |
 |---|---|---|
-| Unity 6000.0 | | |
-| `com.cysharp.unitask` | OpenUPM, tự cài theo `package.json` | Các hàm `async` |
-| `com.google.external-dependency-manager` | OpenUPM, tự cài theo `package.json` | Đưa SDK UMP native vào build |
-| `com.unity.modules.androidjni` | Có sẵn trong Unity | Gọi UMP trên Android |
-| `com.riseon.utils` | Registry RiseOn, tự cài theo `package.json` | Các mục của trang cài đặt |
-| Odin Inspector | Cài tay từ Asset Store | `com.riseon.utils` cần nó |
+| Unity 6000.3 | | Bản đang dùng để phát triển |
+| [Odin Inspector](https://odininspector.com) | Cài tay từ Asset Store | Các mục của trang cài đặt |
+| `com.riseon.utils` 1.0.18 | Tự cài theo `package.json` | Các mục của trang cài đặt |
+| `com.cysharp.unitask` 2.5.11 | Tự cài theo `package.json`, từ OpenUPM | Các hàm `async` |
+| `com.google.external-dependency-manager` 1.2.189 | Tự cài theo `package.json`, từ OpenUPM | Đưa SDK UMP native vào build |
+| `com.unity.modules.androidjni` 1.0.0 | Tự cài theo `package.json`, có sẵn trong Unity | Gọi UMP trên Android |
 | Một app trên AdMob | Tạo trên web AdMob | UMP tìm form của game theo app id, kể cả khi game không hiện quảng cáo AdMob |
+
+"Tự cài" là Package Manager tự lấy theo version từ Unity Registry và các registry khai
+trong manifest, cả khi cài pack bằng git URL. Odin không có trên UPM nên phải cài vào
+project trước. Thiếu Odin thì project báo một lỗi từ `RiseOn.Consent.Requirements`.
 
 ## Cài đặt
 
-Thêm hai registry vào `Packages/manifest.json`. Scope nào project đã có thì
-bỏ qua; registry nào khai scope cụ thể hơn (ví dụ `com.google.firebase`) vẫn
-được ưu tiên cho các gói đó.
+**Registry RiseOn** (khuyên dùng): thêm registry RiseOn với scope `com.riseon`, và
+OpenUPM với scope `com.cysharp`, `com.google`, vào `Packages/manifest.json`, rồi thêm
+package. Scope nào project đã có thì bỏ qua; registry nào khai scope cụ thể hơn (ví
+dụ `com.google.firebase`) vẫn được ưu tiên cho các gói đó.
 
 ```json
-"scopedRegistries": [
-  {
-    "name": "RiseOn",
-    "url": "https://upm.riseongamestudio.com",
-    "scopes": [ "com.riseon" ]
-  },
-  {
-    "name": "OpenUPM",
-    "url": "https://package.openupm.com",
-    "scopes": [ "com.cysharp", "com.google" ]
+{
+  "scopedRegistries": [
+    {
+      "name": "RiseOn",
+      "url": "https://upm.riseongamestudio.com",
+      "scopes": ["com.riseon"]
+    },
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com",
+      "scopes": ["com.cysharp", "com.google"]
+    }
+  ],
+  "dependencies": {
+    "com.riseon.consent": "1.0.2"
   }
-]
+}
 ```
 
-rồi thêm gói vào `dependencies`:
+**Git URL**: phụ thuộc vẫn lấy theo version từ registry, nên manifest cần OpenUPM như ví
+dụ trên; `com.riseon.utils` lấy từ registry RiseOn, hoặc cài bằng git URL trước. Rồi
+*Package Manager → + → Add package from git URL*:
 
-```json
-"com.riseon.consent": "1.0.1"
 ```
+https://github.com/riseongamestudio/Consent.git
+```
+
+**Thư mục local**: `"com.riseon.consent": "file:D:/path/to/Consent"`.
 
 ## Luồng
 
@@ -195,8 +210,8 @@ dòng xóa dòng:
 
 - Chọn một ngôn ngữ trong danh sách: pack có sẵn câu cho 45 ngôn ngữ (cả tiếng Anh),
   theo danh sách ngôn ngữ của App Store Connect. Ô câu hiện câu của pack; sửa thì dùng
-  câu của mình, nút mũi tên vòng trong đầu phải ô quay về câu của pack. Câu của pack đổi khi cập
-  nhật pack thì project dùng câu mới, trừ dòng đã sửa.
+  câu của mình, nút mũi tên vòng trong đầu phải ô quay về câu của pack. Câu của pack đổi
+  khi cập nhật pack thì project dùng câu mới, trừ dòng đã sửa.
 - **Other language**: tự gõ mã ngôn ngữ của Apple (`sw`, `es-419`, `zh-Hant-HK`)
   và câu.
 
@@ -294,6 +309,10 @@ máy: chạy game một lần, rồi tìm trong log dòng UMP in ra.
 
 Trong Editor không có form: người chơi được coi là ở ngoài mọi vùng có luật,
 được phép quảng cáo và đã cho tracking.
+
+## Lịch sử thay đổi
+
+Xem [CHANGELOG.md](CHANGELOG.md).
 
 ## Giấy phép
 

@@ -24,7 +24,9 @@ namespace RiseOn.Consent.Editor.Adapters {
             }
         }
 
-        public override void Sync(ConsentSettings settings, bool emptyOnly = false) => SyncAppIds(Find("AppLovinSettings"), "adMobAndroidAppId", "adMobIosAppId", settings, emptyOnly);
+        public override void Sync(ConsentSettings settings, bool emptyOnly = false) {
+            SyncAppIds(Find("AppLovinSettings"), "adMobAndroidAppId", "adMobIosAppId", settings, emptyOnly);
+        }
 
         private static bool ConsentFlowEnabled() {
             if (!File.Exists(InternalSettingsPath)) return false;

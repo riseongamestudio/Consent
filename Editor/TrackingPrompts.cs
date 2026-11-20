@@ -13,7 +13,7 @@ namespace RiseOn.Consent.Editor {
         public const string English = "This lets the game show ads that suit you better, which keeps it free.";
 
         // Apple's language ids: a language, then an optional script and region, as .lproj folders name them.
-        private static readonly Regex Format = new(@"^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$");
+        private static readonly Regex format = new(@"^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$");
 
         public static readonly (string code, string name, string text)[] Builtin = {
             ("en", "English", English)
@@ -66,7 +66,7 @@ namespace RiseOn.Consent.Editor {
         /// <summary>One language however a folder or a person writes it: zh_Hans and zh-hans are zh-Hans.</summary>
         public static string Key(string code) => code.Replace('_', '-').ToLowerInvariant();
 
-        public static bool IsValid(string code) => Format.IsMatch(code);
+        public static bool IsValid(string code) => format.IsMatch(code);
 
         public static (string code, string name, string text)? Find(string code) {
             var key = Key(code);

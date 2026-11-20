@@ -15,7 +15,7 @@ namespace RiseOn.Consent.Editor {
         private const string AppIdKey         = "com.google.android.gms.ads.APPLICATION_ID";
 
         // Gradle's own output and caches, which hold copies of the manifests.
-        private static readonly string[] SkippedFolders = { "build", ".gradle", ".cxx", "intermediates" };
+        private static readonly string[] skippedFolders = { "build", ".gradle", ".cxx", "intermediates" };
 
         public int callbackOrder => int.MaxValue;
 
@@ -53,7 +53,7 @@ namespace RiseOn.Consent.Editor {
             foreach (var file in Directory.EnumerateFiles(folder, "AndroidManifest.xml")) yield return file;
 
             foreach (var child in Directory.EnumerateDirectories(folder)) {
-                if (SkippedFolders.Contains(Path.GetFileName(child))) continue;
+                if (skippedFolders.Contains(Path.GetFileName(child))) continue;
                 foreach (var file in Manifests(child)) yield return file;
             }
         }
@@ -64,7 +64,8 @@ namespace RiseOn.Consent.Editor {
             return document.SelectSingleNode("/manifest/application") is XmlElement application ? MetaData(application).Select(element => element.GetAttribute("value", AndroidNamespace)) : Enumerable.Empty<string>();
         }
 
-        private static IEnumerable<XmlElement> MetaData(XmlElement application) =>
-            application.ChildNodes.OfType<XmlElement>().Where(element => element.Name == "meta-data" && element.GetAttribute("name", AndroidNamespace) == AppIdKey);
+        private static IEnumerable<XmlElement> MetaData(XmlElement application) {
+            return application.ChildNodes.OfType<XmlElement>().Where(element => element.Name == "meta-data" && element.GetAttribute("name", AndroidNamespace) is AppIdKey);
+        }
     }
 }

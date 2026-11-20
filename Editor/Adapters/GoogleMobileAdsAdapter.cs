@@ -22,6 +22,8 @@ namespace RiseOn.Consent.Editor.Adapters {
             }
         }
 
-        public override void Sync(ConsentSettings settings, bool emptyOnly = false) => SyncAppIds(Load(AssetPath), "adMobAndroidAppId", "adMobIOSAppId", settings, emptyOnly);
+        public override void Sync(ConsentSettings settings, bool emptyOnly = false) {
+            SyncAppIds(Load(AssetPath), "adMobAndroidAppId", "adMobIOSAppId", settings, emptyOnly);
+        }
     }
 }

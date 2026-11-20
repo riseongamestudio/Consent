@@ -39,7 +39,9 @@ namespace RiseOn.Consent.Platforms.IOS {
             ROConsentRequestTracking(Pin(onDone), OnStatus);
         }
 
-        private static IntPtr Pin(object callback) => GCHandle.ToIntPtr(GCHandle.Alloc(callback));
+        private static IntPtr Pin(object callback) {
+            return GCHandle.ToIntPtr(GCHandle.Alloc(callback));
+        }
 
         private static T Release<T>(IntPtr context) where T : class {
             var handle   = GCHandle.FromIntPtr(context);

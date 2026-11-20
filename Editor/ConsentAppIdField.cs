@@ -45,7 +45,9 @@ namespace RiseOn.Consent.Editor {
         }
 
         /// <summary>Fills the empty ids of every SDK's settings file now: for a file an SDK has just made, or a network just turned on.</summary>
-        public static void Sync() => ConsentAdapter.SyncAll(ConsentSettingsProvider.LoadOrCreate(), emptyOnly: true);
+        public static void Sync() {
+            ConsentAdapter.SyncAll(ConsentSettingsProvider.LoadOrCreate(), emptyOnly: true);
+        }
 
         /// <summary>Makes <paramref name="appId"/> the project's id for <paramref name="target"/> and writes it into every SDK's settings file.</summary>
         internal static void Set(BuildTarget target, string appId) {

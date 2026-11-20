@@ -27,8 +27,8 @@ namespace RiseOn.Consent.Editor {
         }
 
         [SettingsProvider]
-        private static SettingsProvider Create() =>
-            new(PagePath, SettingsScope.Project) {
+        private static SettingsProvider Create() {
+            return new(PagePath, SettingsScope.Project) {
                 guiHandler = _ => {
                     using var page = SettingsPage.Begin();
                     var settings = SettingsAssetUtils.Find<ConsentSettings>(ConsentSettings.ResourceName);
@@ -42,6 +42,7 @@ namespace RiseOn.Consent.Editor {
               , deactivateHandler = tree.Dispose
               , keywords = new[] { "consent", "GDPR", "UMP", "AdMob", "ATT", "tracking", "privacy", "child", "language" }
             };
+        }
 
         /// <summary>The whole page for one settings asset.</summary>
         internal static void Draw(ConsentSettings settings) {
@@ -66,7 +67,9 @@ namespace RiseOn.Consent.Editor {
             tree.End();
         }
 
-        private static void DrawIssues() => SettingsIssue.Draw(ConsentChecks.Issues());
+        private static void DrawIssues() {
+            SettingsIssue.Draw(ConsentChecks.Issues());
+        }
 
         // The default text on the bar, Info.plist's, which every player whose language has no row reads, then one row a language. A
         // language Consent translates shows its name and Consent's text until the project writes its own, which the reset button
@@ -135,7 +138,9 @@ namespace RiseOn.Consent.Editor {
         }
 
         /// <summary>The project's settings asset, made with the defaults when it has none.</summary>
-        internal static ConsentSettings LoadOrCreate() => SettingsAssetUtils.LoadOrCreate<ConsentSettings>(ConsentSettings.ResourceName);
+        internal static ConsentSettings LoadOrCreate() {
+            return SettingsAssetUtils.LoadOrCreate<ConsentSettings>(ConsentSettings.ResourceName);
+        }
 
         /// <summary>For the build steps: the asset wherever the project keeps it, or the defaults.</summary>
         internal static ConsentSettings Find() {

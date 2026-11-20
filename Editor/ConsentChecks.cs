@@ -16,7 +16,7 @@ namespace RiseOn.Consent.Editor {
     internal sealed class ConsentChecks : IPreprocessBuildWithReport {
         private const string Where = "Project Settings > RiseOn > Consent";
 
-        private static readonly Regex AppIdFormat = new(@"^ca-app-pub-\d+~\d+$");
+        private static readonly Regex appIdFormat = new(@"^ca-app-pub-\d+~\d+$");
 
         public int callbackOrder => int.MinValue;
 
@@ -64,12 +64,14 @@ namespace RiseOn.Consent.Editor {
             }
         }
 
-        private static string SampleApp(string platform) => $"Test is on for the {platform} AdMob app id: a build uses Google's sample app, which no consent message or ad unit of the game's belongs to; turn it off before a store build.";
+        private static string SampleApp(string platform) {
+            return $"Test is on for the {platform} AdMob app id: a build uses Google's sample app, which no consent message or ad unit of the game's belongs to; turn it off before a store build.";
+        }
 
         private static IEnumerable<SettingsIssue> AppId(ConsentSettings settings, string appId, BuildTarget target, string field) {
             if (appId.Length == 0) {
                 yield return new SettingsIssue(target, true, $"No AdMob {target} app id; UMP reads its consent form by it.", fieldAsset: settings, fieldPath: field);
-            } else if (!AppIdFormat.IsMatch(appId)) {
+            } else if (!appIdFormat.IsMatch(appId)) {
                 yield return new SettingsIssue(target, true, $"\"{appId}\" is not an AdMob app id, which reads ca-app-pub-<publisher>~<app>; an ad unit id has a / instead.", fieldAsset: settings, fieldPath: field);
             }
         }

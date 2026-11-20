@@ -27,13 +27,13 @@ namespace RiseOn.Consent.Editor {
 
         // One object of the objects section, written by Xcode or Unity: on one line, or over lines up to its own
         // closing brace at the object's indent.
-        private static readonly Regex ObjectPattern = new(@"^(?<indent>\t+)(?<guid>[0-9A-Fa-f]{24})(?: /\*.*?\*/)? = \{(?<body>[^\n]*\};|\n.*?\n\k<indent>\};)[ \t]*\r?$", RegexOptions.Multiline | RegexOptions.Singleline);
+        private static readonly Regex objectPattern = new(@"^(?<indent>\t+)(?<guid>[0-9A-Fa-f]{24})(?: /\*.*?\*/)? = \{(?<body>[^\n]*\};|\n.*?\n\k<indent>\};)[ \t]*\r?$", RegexOptions.Multiline | RegexOptions.Singleline);
 
-        private static readonly Regex GuidPattern = new(@"\b[0-9A-Fa-f]{24}\b");
+        private static readonly Regex guidPattern = new(@"\b[0-9A-Fa-f]{24}\b");
 
         public static List<Entry> Copied(string pbxproj, string resourcesPhase, string variantGroupName) {
             var objects = new Dictionary<string, string>();
-            foreach (Match match in ObjectPattern.Matches(pbxproj)) objects[match.Groups["guid"].Value] = match.Groups["body"].Value;
+            foreach (Match match in objectPattern.Matches(pbxproj)) objects[match.Groups["guid"].Value] = match.Groups["body"].Value;
 
             // A group can sit in two groups (AddLocaleVariantFile adds a reused one to the main group); Xcode then
             // takes the one nearest the main group, measured with Xcode 26.6, so the parents come breadth-first.
@@ -113,7 +113,7 @@ namespace RiseOn.Consent.Editor {
         /// Unity's PBXProject cannot do this for a variant group's file read back from disk.
         /// </summary>
         public static string Remove(string pbxproj, ICollection<string> guids) {
-            pbxproj = new Regex(ObjectPattern + @"\n?", RegexOptions.Multiline | RegexOptions.Singleline).Replace(pbxproj, match => guids.Contains(match.Groups["guid"].Value) ? "" : match.Value);
+            pbxproj = new Regex(objectPattern + @"\n?", RegexOptions.Multiline | RegexOptions.Singleline).Replace(pbxproj, match => guids.Contains(match.Groups["guid"].Value) ? "" : match.Value);
             foreach (var guid in guids) pbxproj = Regex.Replace(pbxproj, $@"^[ \t]*{guid}(?: /\*[^\n]*?\*/)?,[ \t]*\r?\n", "", RegexOptions.Multiline);
             return pbxproj;
         }
@@ -125,7 +125,7 @@ namespace RiseOn.Consent.Editor {
 
         private static IEnumerable<string> List(string body, string name) {
             var match = Regex.Match(body, $@"(?<![\w.]){Regex.Escape(name)} = \((?<items>.*?)\);", RegexOptions.Singleline);
-            return match.Success ? GuidPattern.Matches(Regex.Replace(match.Groups["items"].Value, @"/\*.*?\*/", "")).Select(item => item.Value) : Enumerable.Empty<string>();
+            return match.Success ? guidPattern.Matches(Regex.Replace(match.Groups["items"].Value, @"/\*.*?\*/", "")).Select(item => item.Value) : Enumerable.Empty<string>();
         }
     }
 }
