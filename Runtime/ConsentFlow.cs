@@ -4,11 +4,14 @@ using UnityEngine;
 
 namespace RiseOn.Consent {
     /// <summary>
-    /// The consent flow, run once per launch on its own: Google's UMP shows the GDPR or US-state form where the law asks for it (and the IDFA explainer with the ATT prompt, when the AdMob message is set up for it), then on iOS the ATT prompt shows if nothing asked yet.<br/>
+    /// The consent flow, run once per launch on its own: Google's UMP shows the GDPR or US-state form where the law asks for it (and the IDFA explainer with the ATT prompt, when the AdMob message is set up for it), then outside the GDPR regions the privacy notice shows on the first launch, then on iOS the ATT prompt shows if nothing asked yet.<br/>
     /// Every SDK that must wait for it awaits <see cref="WaitUntilCompleteAsync"/>; nothing has to start it.<br/>
     /// When UMP cannot be reached, the decision stored by an earlier launch completes the flow, as Google advises; without one, the flow waits for the one caller of <see cref="PopResultAsync"/> to retry or continue.
     /// </summary>
     public static class ConsentFlow {
+        // PlayerPrefs; the settings page's Reset deletes it in the Editor.
+        internal const string NoticeShownKey = "RiseOn.Consent.NoticeShown";
+
         private static UniTaskCompletionSource<ConsentState> completion = new();
         private static Attempt                               current    = new();
         private static ConsentSettings                       settings;
@@ -20,6 +23,16 @@ namespace RiseOn.Consent {
 
         /// <summary>Unity's thread. The player changed their choices in the privacy options form; the argument is the new <see cref="State"/>.</summary>
         public static event Action<ConsentState> StateChanged;
+
+        /// <summary>The privacy policy page of Project Settings > RiseOn > Consent for the running platform; in the Editor, the build target's.</summary>
+        public static string PrivacyPolicyUrl => Settings.PrivacyPolicyUrl(IsIOS);
+
+        /// <summary>Opens <see cref="PrivacyPolicyUrl"/> in the browser: for the game's settings button, which the stores ask every app to have.</summary>
+        public static void OpenPrivacyPolicy() {
+            Application.OpenURL(PrivacyPolicyUrl);
+        }
+
+        private static bool IsIOS => Application.platform is RuntimePlatform.IPhonePlayer || Application.isEditor && ConsentPlatform.EditorAsIOS;
 
         /// <summary>Completes on Unity's thread with the state once the flow completes, at once if it has.</summary>
         public static UniTask<ConsentState> WaitUntilCompleteAsync() {
@@ -127,6 +140,13 @@ namespace RiseOn.Consent {
         }
 
         private static async UniTask<ConsentState> CompleteAsync(IConsentPlatform platform) {
+            // In the GDPR regions UMP's form is the notice; elsewhere UMP shows none at launch.
+            if (!platform.GdprApplies && PlayerPrefs.GetInt(NoticeShownKey) == 0) {
+                await ShowNoticeAsync(platform);
+                PlayerPrefs.SetInt(NoticeShownKey, 1);
+                PlayerPrefs.Save();
+            }
+
             if (platform.TrackingStatus is TrackingStatus.NotDetermined && !Settings.ChildDirected) {
                 var tracked = new UniTaskCompletionSource<TrackingStatus>();
                 platform.RequestTracking(status => tracked.TrySetResult(status));
@@ -139,6 +159,20 @@ namespace RiseOn.Consent {
             Debug.Log($"{nameof(ConsentFlow)}: {state}");
             completion.TrySetResult(state);
             return state;
+        }
+
+        private static async UniTask ShowNoticeAsync(IConsentPlatform platform) {
+            var continued = new UniTaskCompletionSource();
+            platform.ShowNotice(
+                title: "Privacy Policy"
+              , message: $"To play {Application.productName}, please confirm that you have read our Privacy Policy. It explains how the game and its ad partners collect and use your data."
+              , policyButton: "Read Privacy Policy"
+              , continueButton: "Continue"
+              , url: PrivacyPolicyUrl
+              , onContinued: () => continued.TrySetResult());
+
+            await continued.Task;
+            await UniTask.SwitchToMainThread();
         }
 
         private static ConsentState Read(IConsentPlatform platform) {

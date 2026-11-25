@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using RiseOn.Utils;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -13,31 +12,16 @@ namespace RiseOn.Consent {
     }
 
     /// <summary>
-    /// The project's consent settings, edited in Project Settings > RiseOn > Consent and kept in a Resources asset: the flow reads it in the build, the build steps read the AdMob app ids and the tracking prompt texts.
+    /// The project's consent settings, edited in Project Settings > RiseOn > Consent and kept in a Resources asset: the flow reads it in the build, the build steps read the AdMob app ids and the tracking prompt.
     /// </summary>
     internal sealed class ConsentSettings : ScriptableObject {
         public const string ResourceName = "RiseOnConsentSettings";
 
-        /// <summary>The tracking prompt in one language of the list, English among them.</summary>
-        [Serializable]
-        public struct TrackingTranslation {
-            [SerializeField]
-            private string language;
+        /// <summary>The privacy policy a project gets until it writes its own: RiseOn's, as the packs are RiseOn's.</summary>
+        public const string DefaultPrivacyPolicyUrl = "https://www.riseongamestudio.com/privacy-policy/";
 
-            [SerializeField]
-            private string text;
-
-            public TrackingTranslation(string language, string text) {
-                this.language = language;
-                this.text     = text;
-            }
-
-            /// <summary>Apple's language code, the name of the app's .lproj folder: vi, pt-BR, zh-Hans.</summary>
-            public string Language => language?.Trim() ?? "";
-
-            /// <summary>Empty for the package's own translation.</summary>
-            public string Text => text ?? "";
-        }
+        /// <summary>The tracking prompt a project gets until it writes its own.</summary>
+        public const string DefaultTrackingPrompt = "This lets the game show ads that suit you better, which keeps it free.";
 
         [SerializeField]
         private string adMobAppIdAndroid;
@@ -57,13 +41,20 @@ namespace RiseOn.Consent {
         [SerializeField]
         private string trackingPrompt;
 
+        // Both platforms' page, or Android's alone while split.
         [SerializeField]
-        private List<TrackingTranslation> trackingTranslations = new();
+        private string privacyPolicyUrl = DefaultPrivacyPolicyUrl;
+
+        [SerializeField]
+        private bool privacyPolicyUrlSplit;
+
+        [SerializeField]
+        private string privacyPolicyUrlIOS;
 
         [SerializeField, LabelText("Region")]
         private ConsentDebugGeography debugGeography;
 
-        [SerializeField, SectionList(Item = "device"), LabelText("Test devices")]
+        [SerializeField, SectionList(Item = "device", Foldable = true), LabelText("Test devices")]
         [Tooltip("The devices the testing region applies to. A device prints its id the first time the game starts on it: search logcat for addTestDeviceHashedId, or the Xcode console for testDeviceIdentifiers.")]
         private string[] testDeviceHashedIds = Array.Empty<string>();
 
@@ -81,10 +72,14 @@ namespace RiseOn.Consent {
         public bool AdMobAppIdIOSTest => adMobAppIdIOSTest;
         public bool ChildDirected => childDirected;
 
-        /// <summary>The default tracking prompt, in Info.plist, for every language without a row; empty for the package's English one.</summary>
-        public string TrackingPrompt => trackingPrompt ?? "";
+        /// <summary>The tracking prompt in Info.plist: the project's, or <see cref="DefaultTrackingPrompt"/>.</summary>
+        public string TrackingPrompt => string.IsNullOrWhiteSpace(trackingPrompt) ? DefaultTrackingPrompt : trackingPrompt.Trim();
 
-        public IReadOnlyList<TrackingTranslation> TrackingTranslations => trackingTranslations;
+        /// <summary>The privacy policy page for a platform: iOS's own while split, else the one for both.</summary>
+        public string PrivacyPolicyUrl(bool ios) => ((ios && privacyPolicyUrlSplit ? privacyPolicyUrlIOS : privacyPolicyUrl) ?? "").Trim();
+
+        public bool PrivacyPolicyUrlSplit => privacyPolicyUrlSplit;
+
         public ConsentDebugGeography DebugGeography => debugGeography;
         public string[] TestDeviceHashedIds => testDeviceHashedIds;
 

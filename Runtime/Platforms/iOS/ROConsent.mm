@@ -10,6 +10,7 @@ extern "C" UIViewController *UnityGetGLViewController(void);
 // errorKind: 0 when it went through, else the ordinal of the C# ConsentErrorKind plus one.
 typedef void (*ROConsentErrorCallback)(intptr_t context, int errorKind, const char *message);
 typedef void (*ROConsentStatusCallback)(intptr_t context, int status);
+typedef void (*ROConsentDoneCallback)(intptr_t context);
 
 static const int ROConsentErrorNone = 0;
 static const int ROConsentErrorNetwork = 1;
@@ -62,6 +63,24 @@ static char *ROConsentCopy(NSString *text) {
 static NSString *ROConsentText(NSString *key) {
     id value = [[NSUserDefaults standardUserDefaults] objectForKey:key];
     return value == nil ? @"" : [value description];
+}
+
+// Any button closes an alert, so the policy button opens the page and puts the notice back until the player continues.
+static void ROConsentPresentNotice(NSString *title, NSString *message, NSString *policyButton, NSString *continueButton, NSURL *url, intptr_t context, ROConsentDoneCallback callback) {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:policyButton style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        if (url != nil) [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            ROConsentPresentNotice(title, message, policyButton, continueButton, url, context, callback);
+        });
+    }]];
+
+    UIAlertAction *proceed = [UIAlertAction actionWithTitle:continueButton style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        callback(context);
+    }];
+    [alert addAction:proceed];
+    alert.preferredAction = proceed;
+    [UnityGetGLViewController() presentViewController:alert animated:YES completion:nil];
 }
 
 extern "C" {
@@ -131,6 +150,18 @@ extern "C" {
     int ROConsentTrackingStatus(void) {
         if (@available(iOS 14, *)) return (int)ATTrackingManager.trackingAuthorizationStatus;
         return 3;
+    }
+
+    void ROConsentShowNotice(const char *title, const char *message, const char *policyButton, const char *continueButton, const char *url, intptr_t context, ROConsentDoneCallback callback) {
+        NSString *titleText = [NSString stringWithUTF8String:title ?: ""];
+        NSString *messageText = [NSString stringWithUTF8String:message ?: ""];
+        NSString *policyText = [NSString stringWithUTF8String:policyButton ?: ""];
+        NSString *continueText = [NSString stringWithUTF8String:continueButton ?: ""];
+        NSURL *link = [NSURL URLWithString:[NSString stringWithUTF8String:url ?: ""]];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            ROConsentPresentNotice(titleText, messageText, policyText, continueText, link, context, callback);
+        });
     }
 
     void ROConsentRequestTracking(intptr_t context, ROConsentStatusCallback callback) {

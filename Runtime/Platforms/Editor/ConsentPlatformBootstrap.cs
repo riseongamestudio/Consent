@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
 namespace RiseOn.Consent.Platforms.Editor {
     internal static class ConsentPlatformBootstrap {
@@ -6,6 +7,7 @@ namespace RiseOn.Consent.Platforms.Editor {
         private static void Install() {
             if (!Application.isEditor) return;
 
+            ConsentPlatform.EditorAsIOS = EditorUserBuildSettings.activeBuildTarget is BuildTarget.iOS;
             ConsentPlatform.Install(new ConsentPlatformEditor());
         }
     }

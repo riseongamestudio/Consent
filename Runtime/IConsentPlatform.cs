@@ -30,10 +30,30 @@ namespace RiseOn.Consent {
 
         /// <summary>Shows the system prompt; <paramref name="onDone"/> may come on any thread.</summary>
         void RequestTracking(Action<TrackingStatus> onDone);
+
+        /// <summary>
+        /// The privacy notice as the platform's own dialog: its policy button opens <paramref name="url"/> and leaves the dialog up, and <paramref name="onContinued"/>, which may come on any thread, runs once the player continues.
+        /// </summary>
+        void ShowNotice(string title, string message, string policyButton, string continueButton, string url, Action onContinued);
     }
 
     internal static class ConsentPlatform {
         public static IConsentPlatform Installed { get; private set; }
+
+        /// <summary>The Editor plays as iOS: its build target is iOS. Set by the Editor's platform, which can read the target.</summary>
+        public static bool EditorAsIOS { get; set; }
+
+        /// <summary>The PlayerPrefs keys the Editor's stand-in keeps the choices in; the settings page's Reset deletes them.</summary>
+        public static readonly string[] EditorChoiceKeys = { EditorDecidedKey, EditorConsentKey, EditorOptOutKey, EditorTrackingKey };
+
+        // 0 before any decision, 1 for one outside the GDPR regions, 2 for one inside them.
+        public const string EditorDecidedKey  = "RiseOn.Consent.Editor.Decided";
+        public const string EditorConsentKey  = "RiseOn.Consent.Editor.Consent";
+        public const string EditorOptOutKey   = "RiseOn.Consent.Editor.OptOut";
+        public const string EditorTrackingKey = "RiseOn.Consent.Editor.Tracking";
+
+        /// <summary>EditorPrefs, so each person picks it for themselves: 0 for none, else a <see cref="ConsentErrorKind"/> plus one, as <see cref="Error"/> reads it.</summary>
+        public const string EditorFailureKey = "RiseOn.Consent.Editor.Failure";
 
         public static void Install(IConsentPlatform platform) {
             Installed = platform;

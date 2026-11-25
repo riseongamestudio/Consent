@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using RiseOn.Consent.Editor.Adapters;
@@ -55,8 +56,11 @@ namespace RiseOn.Consent.Editor {
             if (settings.AdMobAppIdAndroidTest) yield return new SettingsIssue(BuildTarget.Android, false, SampleApp("Android"), fieldAsset: settings, fieldPath: "adMobAppIdAndroid");
             if (settings.AdMobAppIdIOSTest) yield return new SettingsIssue(BuildTarget.iOS, false, SampleApp("iOS"), fieldAsset: settings, fieldPath: "adMobAppIdIOS");
 
-            if (!settings.ChildDirected) {
-                foreach (var problem in TrackingPrompts.Problems(settings)) yield return new SettingsIssue(BuildTarget.iOS, true, problem);
+            if (settings.PrivacyPolicyUrlSplit) {
+                foreach (var issue in PrivacyPolicy(settings, BuildTarget.Android, ios: false, "privacyPolicyUrl")) yield return issue;
+                foreach (var issue in PrivacyPolicy(settings, BuildTarget.iOS, ios: true, "privacyPolicyUrlIOS")) yield return issue;
+            } else {
+                foreach (var issue in PrivacyPolicy(settings, BuildTarget.NoTarget, ios: false, "privacyPolicyUrl")) yield return issue;
             }
 
             foreach (var adapter in ConsentAdapter.All) {
@@ -66,6 +70,15 @@ namespace RiseOn.Consent.Editor {
 
         private static string SampleApp(string platform) {
             return $"Test is on for the {platform} AdMob app id: a build uses Google's sample app, which no consent message or ad unit of the game's belongs to; turn it off before a store build.";
+        }
+
+        // The game's privacy button and the notice open it in a browser.
+        private static IEnumerable<SettingsIssue> PrivacyPolicy(ConsentSettings settings, BuildTarget target, bool ios, string urlField) {
+            var url = settings.PrivacyPolicyUrl(ios);
+            if (Uri.TryCreate(url, UriKind.Absolute, out var page) && (page.Scheme == Uri.UriSchemeHttps || page.Scheme == Uri.UriSchemeHttp)) yield break;
+
+            var which = target is BuildTarget.NoTarget ? "" : $" {target}";
+            yield return new SettingsIssue(target, true, url.Length == 0 ? $"The{which} privacy policy URL is empty." : $"\"{url}\" is not a web page's address, which starts with https://.", fieldAsset: settings, fieldPath: urlField);
         }
 
         private static IEnumerable<SettingsIssue> AppId(ConsentSettings settings, string appId, BuildTarget target, string field) {

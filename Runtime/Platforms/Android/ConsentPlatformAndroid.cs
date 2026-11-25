@@ -4,6 +4,7 @@ using UnityEngine;
 namespace RiseOn.Consent.Platforms.Android {
     internal sealed class ConsentPlatformAndroid : IConsentPlatform {
         private const string BridgeClass = "com.riseon.consent.Ump";
+        private const string NoticeClass = "com.riseon.consent.Notice";
 
         private static AndroidJavaObject Activity {
             get {
@@ -38,10 +39,29 @@ namespace RiseOn.Consent.Platforms.Android {
             onDone(TrackingStatus.Authorized);
         }
 
+        public void ShowNotice(string title, string message, string policyButton, string continueButton, string url, Action onContinued) {
+            using var notice   = new AndroidJavaClass(NoticeClass);
+            using var activity = Activity;
+            notice.CallStatic("show", activity, title, message, policyButton, continueButton, url, new NoticeListener(onContinued));
+        }
+
         private static T Call<T>(string method) {
             using var bridge   = new AndroidJavaClass(BridgeClass);
             using var activity = Activity;
             return bridge.CallStatic<T>(method, activity);
+        }
+
+        private sealed class NoticeListener : AndroidJavaProxy {
+            private readonly Action callback;
+
+            public NoticeListener(Action callback) : base(NoticeClass + "$Listener") {
+                this.callback = callback;
+            }
+
+            // Called by name from Java.
+            public void onContinued() {
+                callback?.Invoke();
+            }
         }
 
         private sealed class Listener : AndroidJavaProxy {

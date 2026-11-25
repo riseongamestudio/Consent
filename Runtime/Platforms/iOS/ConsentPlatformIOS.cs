@@ -6,6 +6,7 @@ namespace RiseOn.Consent.Platforms.IOS {
     internal sealed class ConsentPlatformIOS : IConsentPlatform {
         private delegate void ErrorCallback(IntPtr context, int errorKind, string message);
         private delegate void StatusCallback(IntPtr context, int status);
+        private delegate void DoneCallback(IntPtr context);
 
         [DllImport("__Internal")] private static extern void ROConsentRequest([MarshalAs(UnmanagedType.I1)] bool tagForUnderAgeOfConsent, int debugGeography, string testDeviceHashedIds, IntPtr context, ErrorCallback callback);
         [DllImport("__Internal")] [return: MarshalAs(UnmanagedType.I1)] private static extern bool ROConsentCanRequestAds();
@@ -17,6 +18,7 @@ namespace RiseOn.Consent.Platforms.IOS {
         [DllImport("__Internal")] private static extern void ROConsentShowPrivacyOptions(IntPtr context, ErrorCallback callback);
         [DllImport("__Internal")] private static extern int ROConsentTrackingStatus();
         [DllImport("__Internal")] private static extern void ROConsentRequestTracking(IntPtr context, StatusCallback callback);
+        [DllImport("__Internal")] private static extern void ROConsentShowNotice(string title, string message, string policyButton, string continueButton, string url, IntPtr context, DoneCallback callback);
 
         public void Request(bool tagForUnderAgeOfConsent, ConsentDebugGeography debugGeography, string[] testDeviceHashedIds, Action<ConsentException> onDone) {
             ROConsentRequest(tagForUnderAgeOfConsent, (int)debugGeography, string.Join("\n", testDeviceHashedIds), Pin(onDone), OnError);
@@ -39,6 +41,10 @@ namespace RiseOn.Consent.Platforms.IOS {
             ROConsentRequestTracking(Pin(onDone), OnStatus);
         }
 
+        public void ShowNotice(string title, string message, string policyButton, string continueButton, string url, Action onContinued) {
+            ROConsentShowNotice(title, message, policyButton, continueButton, url, Pin(onContinued), OnDone);
+        }
+
         private static IntPtr Pin(object callback) {
             return GCHandle.ToIntPtr(GCHandle.Alloc(callback));
         }
@@ -53,6 +59,11 @@ namespace RiseOn.Consent.Platforms.IOS {
         [MonoPInvokeCallback(typeof(ErrorCallback))]
         private static void OnError(IntPtr context, int errorKind, string message) {
             Release<Action<ConsentException>>(context)?.Invoke(ConsentPlatform.Error(errorKind, message));
+        }
+
+        [MonoPInvokeCallback(typeof(DoneCallback))]
+        private static void OnDone(IntPtr context) {
+            Release<Action>(context)?.Invoke();
         }
 
         [MonoPInvokeCallback(typeof(StatusCallback))]
