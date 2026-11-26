@@ -2,7 +2,10 @@
     "name": "RiseOn.Consent.Platforms.Editor",
     "rootNamespace": "RiseOn.Consent.Platforms.Editor",
     "references": [
-        "RiseOn.Consent"
+        "RiseOn.Consent",
+        "RiseOn.Utils",
+        "UnityEngine.UI",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -14,6 +17,12 @@
         "UNITY_EDITOR",
         "ODIN_INSPECTOR"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1.0.0",
+            "define": "CONSENT_SUPPORT_INPUTSYSTEM"
+        }
+    ],
     "noEngineReferences": false
 }

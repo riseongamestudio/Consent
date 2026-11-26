@@ -6,16 +6,30 @@ Mọi thay đổi đáng kể của `com.riseon.consent` được ghi ở đây.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-26
+
+Bản lớn vì hai thay đổi game đang dùng pack thấy ngay khi nâng: hộp thoại thông báo
+mới ở lần mở game đầu tiên, và danh sách câu xin tracking theo ngôn ngữ bị bỏ.
+
 ### Thêm
 
 - Mục **Privacy Policy URL** trên trang settings, điền sẵn trang của RiseOn, tách
   được thành trang riêng cho Android và iOS; `ConsentFlow.PrivacyPolicyUrl` và `ConsentFlow.OpenPrivacyPolicy()` cho nút chính
   sách trong game.
-- Hộp thoại thông báo chính sách quyền riêng tư của hệ điều hành ở lần mở game đầu
-  tiên, ngoài vùng GDPR.
-- Trong Editor, hộp thoại thay cho form UMP, popup ATT và hộp thoại thông báo theo
-  Region của mục Testing, lựa chọn giữ qua các lần Play; **Editor failure** cho UMP
-  giả lỗi, **Reset** quên các lựa chọn.
+- Trong Editor, khi Play, hộp thoại vẽ trong Game view thay cho form UMP, popup ATT và
+  hộp thoại thông báo, theo dáng của bản thật và theo Region của mục Testing; như trên
+  máy, chỉ popup ATT dừng game (`IEditorPauseHandler` của `com.riseon.utils`). Lựa
+  chọn giữ qua các lần Play; **Editor failure** cho UMP giả lỗi, **Reset** quên các
+  lựa chọn. Ở batchmode, hộp thoại thông báo coi như bấm tiếp tục, các hộp thoại khác
+  nhận nút thứ hai.
+- Phụ thuộc `com.unity.ugui`, cho các hộp thoại trong Editor.
+
+### Đổi
+
+- Ngoài vùng GDPR, lần mở game đầu tiên hiện hộp thoại thông báo chính sách quyền
+  riêng tư của hệ điều hành, có nút mở trang **Privacy Policy URL**; người chơi đã mở
+  game bản cũ cũng gặp nó một lần sau khi cập nhật.
+- Phụ thuộc RiseOn lên bản phát hành cùng đợt: `com.riseon.utils` 2.0.0.
 
 ### Bỏ
 

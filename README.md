@@ -28,10 +28,11 @@ và iOS; build cho nền tảng khác bị dừng.
 |---|---|---|
 | Unity 6000.3 | | Bản đang dùng để phát triển |
 | [Odin Inspector](https://odininspector.com) | Cài tay từ Asset Store | Các mục của trang cài đặt |
-| `com.riseon.utils` 1.0.18 | Tự cài theo `package.json` | Các mục của trang cài đặt |
+| `com.riseon.utils` 2.0.0 | Tự cài theo `package.json` | Các mục của trang cài đặt, dừng game dưới popup ATT trong Editor |
 | `com.cysharp.unitask` 2.5.11 | Tự cài theo `package.json`, từ OpenUPM | Các hàm `async` |
 | `com.google.external-dependency-manager` 1.2.189 | Tự cài theo `package.json`, từ OpenUPM | Đưa SDK UMP native vào build |
 | `com.unity.modules.androidjni` 1.0.0 | Tự cài theo `package.json`, có sẵn trong Unity | Gọi UMP trên Android |
+| `com.unity.ugui` 2.0.0 | Tự cài theo `package.json`, có sẵn trong Unity | Hộp thoại thay form trong Editor |
 | Một app trên AdMob | Tạo trên web AdMob | UMP tìm form của game theo app id, kể cả khi game không hiện quảng cáo AdMob |
 
 "Tự cài" là Package Manager tự lấy theo version từ Unity Registry và các registry khai
@@ -60,7 +61,7 @@ dụ `com.google.firebase`) vẫn được ưu tiên cho các gói đó.
     }
   ],
   "dependencies": {
-    "com.riseon.consent": "1.0.2"
+    "com.riseon.consent": "2.0.0"
   }
 }
 ```
@@ -187,8 +188,8 @@ sửa nếu sửa được ngay.
 | Mục | Ý nghĩa |
 |---|---|
 | AdMob App ID | Hai ô Android và iOS trên một dòng; cửa sổ hẹp thì mỗi ô một dòng, nút **Test** liền sau mỗi ô. Lấy ở AdMob > Apps > App settings. Build ghi vào manifest và `Info.plist`. Xem [App id AdMob](#app-id-admob) |
-| Privacy Policy URL | Trang chính sách mà nút trong game và hộp thoại thông báo mở, một trang cho cả hai nền tảng, điền sẵn trang của RiseOn. Nút cuối dòng tách thành hai ô Android và iOS, bắt đầu từ trang đang có; tách rồi thì nút đó nối lại, giữ trang của Android. Ô trống hoặc không phải địa chỉ web thì chặn build |
 | Child Directed | Game cho trẻ em: UMP coi mọi người chơi là chưa đủ tuổi đồng ý, iOS không hỏi ATT, build không ghi câu xin tracking và trang ẩn mục Tracking prompt |
+| Privacy Policy URL | Trang chính sách mà nút trong game và hộp thoại thông báo mở, một trang cho cả hai nền tảng, điền sẵn trang của RiseOn. Nút cuối dòng tách thành hai ô Android và iOS, bắt đầu từ trang đang có; tách rồi thì nút đó nối lại, giữ trang của Android. Ô trống hoặc không phải địa chỉ web thì chặn build |
 | Tracking prompt (iOS) | Câu dưới tiêu đề popup ATT, tiếng Anh, ghi vào `Info.plist`. Để trống là câu của pack; nút mũi tên vòng trong đầu phải ô quay về câu đó |
 | Testing the form | Gập sẵn; trong có Region, hai dòng cho Editor, và danh sách Test devices ở cuối, gập được. Xem [Thử form](#thử-form) |
 
@@ -276,8 +277,9 @@ máy: chạy game một lần, rồi tìm trong log dòng UMP in ra.
 | Android | `addTestDeviceHashedId` (logcat) |
 | iOS | `testDeviceIdentifiers` (console Xcode) |
 
-Trong Editor, pack hiện hộp thoại của Editor thay cho form UMP, popup ATT và hộp
-thoại thông báo, theo vùng chọn trong **Region** (Disabled là ngoài mọi vùng có luật):
+Trong Editor, khi Play, pack vẽ trong Game view các hộp thoại thay cho form UMP, popup
+ATT và hộp thoại thông báo, theo vùng chọn trong **Region** (Disabled là ngoài mọi
+vùng có luật):
 
 | Region | Lúc mở game | Nút privacy (`ShowPrivacyOptionsAsync`) |
 |---|---|---|
@@ -287,6 +289,25 @@ thoại thông báo, theo vùng chọn trong **Region** (Disabled là ngoài m�
 
 Popup ATT chỉ hiện khi build target là iOS; target khác thì tracking luôn
 `Authorized`. Hộp thoại thông báo hiện theo đúng luật trên thiết bị.
+
+Hộp thoại giống bản thật trên máy:
+
+- Form UMP là thẻ trắng giữa màn hình, nút đồng ý tô xanh ở trên. Popup ATT là alert
+  kiểu iOS. Hộp thoại thông báo là alert kiểu iOS khi build target là iOS, kiểu
+  Android với target khác; nút mở trang chính sách mở trang và để hộp thoại lại.
+- Hộp thoại phủ mờ cả game và nhận mọi lần chạm, trên mọi canvas của game. Scene chưa
+  có `EventSystem` thì pack tạo một cái, dùng Input System khi project có.
+- Chỉ popup ATT dừng game, như iOS dừng Unity khi alert hệ thống hiện: pack gọi
+  `IEditorPauseHandler` của `com.riseon.utils`, game muốn dừng theo cách riêng thì
+  xem [EditorPauseHandler](https://github.com/riseongamestudio/Utils/blob/main/Core/Runtime/EditorPauseHandler/README.md).
+  Form UMP và hộp thoại thông báo không dừng game.
+
+Khi Unity chạy batchmode (test tự động, build bằng dòng lệnh) không ai bấm được: mọi
+hộp thoại nhận nút thứ hai (không đồng ý, `Denied`, giữ bán dữ liệu), riêng hộp thoại
+thông báo coi như bấm tiếp tục. Lựa chọn đó ghi vào PlayerPrefs, chung với Editor mở
+thường của cùng project (cùng Company Name và Product Name), nên sau đó Play không hỏi
+lại cho tới khi bấm **Reset**. Chạy test batchmode trên một bản chép của project thì
+đổi Product Name của bản chép để nó có PlayerPrefs riêng.
 
 Lựa chọn được giữ qua các lần Play, như máy thật giữ. Hai dòng dưới Region:
 

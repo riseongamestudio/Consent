@@ -56,9 +56,9 @@ namespace RiseOn.Consent.Editor {
 
             var root = tree.Begin(settings);
             ConsentAppIdField.Draw();
-            DrawPrivacyPolicy(settings, root);
             var childDirected = root.Children["childDirected"];
             childDirected.Draw();
+            DrawPrivacyPolicy(settings, root);
 
             // A game for children never asks, so the prompt has nothing to say.
             if (childDirected.ValueEntry.WeakSmartValue is false) {
