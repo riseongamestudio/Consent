@@ -24,7 +24,8 @@ namespace RiseOn.Consent.Editor {
         public void OnPreprocessBuild(BuildReport report) {
             var target = report.summary.platform;
             if (target is not BuildTarget.Android and not BuildTarget.iOS) {
-                throw new BuildFailedException($"com.riseon.consent runs on Android and iOS only, not {target}; remove the package from builds for {target}.");
+                Debug.LogWarning($"Consent: com.riseon.consent runs on Android and iOS only; in this {target} build it logs an error at launch and completes with nothing allowed.");
+                return;
             }
 
             // A plugin's empty copy of the app ids takes Consent's, as a plugin added since has; a differing one is an issue below.

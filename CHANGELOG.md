@@ -6,6 +6,16 @@ Mọi thay đổi đáng kể của `com.riseon.consent` được ghi ở đây.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-28
+
+### Thêm
+
+- WebGL và bản build desktop: game build được mà không phải gỡ pack. Lúc build, pack ghi
+  một cảnh báo thay vì dừng build; lúc chạy luồng ghi một lỗi rồi hoàn thành ngay, không
+  cho phép gì, `PopResultAsync()` trả `ConsentUnsupported`, và
+  `ShowPrivacyOptionsAsync()` ném `PlatformNotSupportedException`. Xem mục Nền tảng
+  khác của README.
+
 ## [2.0.0] - 2026-11-26
 
 Bản lớn vì hai thay đổi game đang dùng pack thấy ngay khi nâng: hộp thoại thông báo

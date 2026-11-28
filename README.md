@@ -5,8 +5,9 @@ GDPR hoặc luật bang Mỹ của Google UMP, hộp thoại thông báo chính 
 ở lần mở đầu tiên, rồi popup App Tracking Transparency trên iOS. Luồng tự chạy khi
 mở game; bên nào cần chờ thì `await ConsentFlow.WaitUntilCompleteAsync()`.
 
-Package `com.riseon.consent`, namespace `RiseOn.Consent`. Chỉ build cho Android
-và iOS; build cho nền tảng khác bị dừng.
+Package `com.riseon.consent`, namespace `RiseOn.Consent`. Chạy trên Android, iOS
+và trong Editor. Game vẫn build được cho nền tảng khác (WebGL, desktop), nhưng ở đó
+không hỏi ai, xem [Nền tảng khác](#nền-tảng-khác).
 
 ## Mục lục
 
@@ -15,6 +16,7 @@ và iOS; build cho nền tảng khác bị dừng.
 - [Luồng](#luồng)
 - [Dùng trong game](#dùng-trong-game)
 - [Khi UMP lỗi](#khi-ump-lỗi)
+- [Nền tảng khác](#nền-tảng-khác)
 - [Cài đặt của project](#cài-đặt-của-project)
 - [Khi build](#khi-build)
 - [`ConsentState`](#consentstate)
@@ -129,7 +131,7 @@ không.
 |---|---|
 | `WaitUntilCompleteAsync()` | Hoàn thành trên thread của Unity, trả `ConsentState` khi luồng xong |
 | `State` | `ConsentState?`; `null` khi luồng chưa xong |
-| `ShowPrivacyOptionsAsync()` | Mở lại form để người chơi đổi lựa chọn. Gọi khi luồng chưa xong thì ném `InvalidOperationException`; form lỗi thì ném `ConsentException` |
+| `ShowPrivacyOptionsAsync()` | Mở lại form để người chơi đổi lựa chọn. Gọi khi luồng chưa xong thì ném `InvalidOperationException`; form lỗi thì ném `ConsentException`; trên [nền tảng khác](#nền-tảng-khác) thì ném `PlatformNotSupportedException` |
 | `StateChanged` | Chỉ phát khi lựa chọn mới khác lựa chọn cũ; đối số là `State` mới |
 | `PrivacyPolicyUrl` | Trang chính sách của nền tảng đang chạy, theo mục Privacy Policy URL; trong Editor là của build target đang chọn |
 | `OpenPrivacyPolicy()` | Mở `PrivacyPolicyUrl` bằng trình duyệt |
@@ -162,7 +164,7 @@ while (result is ConsentFailed failed) {
 
 | API | Ý nghĩa |
 |---|---|
-| `PopResultAsync()` | Kết quả của lần chạy hiện tại: `ConsentSucceeded` hoặc `ConsentFailed`. Mỗi lần chạy chỉ lấy ra được một lần; lần thứ hai ném `InvalidOperationException`, để một lỗi không tới hai chỗ xử lý |
+| `PopResultAsync()` | Kết quả của lần chạy hiện tại: `ConsentSucceeded`, `ConsentFailed`, hoặc `ConsentUnsupported` trên [nền tảng khác](#nền-tảng-khác). Mỗi lần chạy chỉ lấy ra được một lần; lần thứ hai ném `InvalidOperationException`, để một lỗi không tới hai chỗ xử lý |
 | `ConsentFailed.Error` | `ConsentException`; `Kind` cho biết loại lỗi |
 | `ConsentFailed.RetryAsync()` | Chạy lại luồng, trả kết quả mới cho chính bên gọi |
 | `ConsentFailed.ContinueAsync()` | Xong luồng mà không có lựa chọn: `CanRequestAds` là `false` tới hết lần mở này, lần mở sau hỏi lại |
@@ -175,6 +177,22 @@ while (result is ConsentFailed failed) {
 
 Mỗi `ConsentFailed` chỉ thử lại hoặc đi tiếp được một lần. Game không lấy kết quả
 ra thì luồng chờ mãi; lỗi chỉ hiện trong log.
+
+## Nền tảng khác
+
+Trên WebGL và bản build desktop không có Google UMP, không hỏi được ai. Game không
+phải gỡ pack để build cho các nền tảng này:
+
+- Lúc build, pack ghi một cảnh báo trong Console, build vẫn ra. Các kiểm tra ở mục
+  [Khi build](#khi-build) chỉ chạy khi build Android và iOS.
+- Lúc chạy, luồng ghi một lỗi vào log rồi hoàn thành ngay, không cho phép gì.
+  `ConsentState` mà `WaitUntilCompleteAsync()` và `State` trả có `GdprApplies`,
+  `CanRequestAds`, `HasUserConsent` là `false`, `TrackingStatus` là `Denied`,
+  `DoNotSell` là `true`, `ChildDirected` theo trang settings, và
+  `PrivacyOptionsRequired` là `false`, nên nút privacy viết như mẫu ở
+  [Dùng trong game](#dùng-trong-game) sẽ ẩn. `PopResultAsync()` trả
+  `ConsentUnsupported`, có `State` là trạng thái đó.
+- `ShowPrivacyOptionsAsync()` ném `PlatformNotSupportedException`.
 
 ## Cài đặt của project
 
@@ -230,7 +248,6 @@ của pack chạy sau mọi plugin khác mà nó có thể chạy sau, rồi ghi
 
 | Trường hợp | Sửa |
 |---|---|
-| Build cho nền tảng khác Android và iOS | Pack chỉ chạy trên Android và iOS: bỏ pack khỏi project khi build cho nền tảng khác |
 | Project chưa có asset settings của Consent | Nút **Create** trên trang settings |
 | Asset settings nằm ngoài thư mục `Resources`: game không đọc được, chạy với giá trị mặc định | Nút **Move it** |
 | Thiếu app id AdMob cho nền tảng đang build, hoặc app id sai dạng `ca-app-pub-<số>~<số>` | Điền ở trang settings |

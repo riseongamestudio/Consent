@@ -6,7 +6,8 @@ namespace RiseOn.Consent {
     /// <summary>
     /// The consent flow, run once per launch on its own: Google's UMP shows the GDPR or US-state form where the law asks for it (and the IDFA explainer with the ATT prompt, when the AdMob message is set up for it), then outside the GDPR regions the privacy notice shows on the first launch, then on iOS the ATT prompt shows if nothing asked yet.<br/>
     /// Every SDK that must wait for it awaits <see cref="WaitUntilCompleteAsync"/>; nothing has to start it.<br/>
-    /// When UMP cannot be reached, the decision stored by an earlier launch completes the flow, as Google advises; without one, the flow waits for the one caller of <see cref="PopResultAsync"/> to retry or continue.
+    /// When UMP cannot be reached, the decision stored by an earlier launch completes the flow, as Google advises; without one, the flow waits for the one caller of <see cref="PopResultAsync"/> to retry or continue.<br/>
+    /// On a platform it does not run on (WebGL, desktop players) it logs one error and completes at once with <see cref="ConsentUnsupported"/>.
     /// </summary>
     public static class ConsentFlow {
         // PlayerPrefs; the settings page's Reset deletes it in the Editor.
@@ -51,12 +52,12 @@ namespace RiseOn.Consent {
 
         /// <summary>
         /// Opens the form again for the player to change their choices; raises <see cref="StateChanged"/> when they did.<br/>
-        /// Throws before the flow completes, and throws the <see cref="ConsentException"/> when the form fails.
+        /// Throws before the flow completes, on a platform the flow does not run on, and throws the <see cref="ConsentException"/> when the form fails.
         /// </summary>
         public static async UniTask ShowPrivacyOptionsAsync() {
             if (State == null) throw new InvalidOperationException($"{nameof(ConsentFlow)}: the privacy options form needs the flow to complete first");
 
-            var platform = ConsentPlatform.Installed;
+            var platform = ConsentPlatform.Installed ?? throw new PlatformNotSupportedException($"{nameof(ConsentFlow)}: no privacy options form on {Application.platform}");
             var closed   = new UniTaskCompletionSource<ConsentException>();
             platform.ShowPrivacyOptions(error => closed.TrySetResult(error));
 
@@ -87,11 +88,14 @@ namespace RiseOn.Consent {
         private static void Run() {
             var platform = ConsentPlatform.Installed;
             if (platform == null) {
-                // The build stops for these platforms; this only fails awaiters loudly if one gets through anyway.
-                var error = new PlatformNotSupportedException($"{nameof(ConsentFlow)}: no consent platform for {Application.platform}");
-                completion.TrySetException(error);
-                current.Result.TrySetException(error);
-                throw error;
+                // Nobody can be asked, so nothing is allowed; the privacy button stays hidden, as there is no form behind it.
+                Debug.LogError($"{nameof(ConsentFlow)}: the consent flow does not run on {Application.platform}, only on Android and iOS; it completes with nothing allowed");
+                var state = new ConsentState(gdprApplies: false, canRequestAds: false, hasUserConsent: false, trackingStatus: TrackingStatus.Denied, doNotSell: true
+                                           , childDirected: Settings.ChildDirected, privacyOptionsRequired: false);
+                State = state;
+                completion.TrySetResult(state);
+                current.Result.TrySetResult(new ConsentUnsupported(state));
+                return;
             }
 
             RunAsync(platform, current).Forget();

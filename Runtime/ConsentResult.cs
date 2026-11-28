@@ -2,7 +2,7 @@
 using Cysharp.Threading.Tasks;
 
 namespace RiseOn.Consent {
-    /// <summary>How one run of the consent flow ended: <see cref="ConsentSucceeded"/> or <see cref="ConsentFailed"/>.</summary>
+    /// <summary>How one run of the consent flow ended: <see cref="ConsentSucceeded"/>, <see cref="ConsentFailed"/> or <see cref="ConsentUnsupported"/>.</summary>
     public abstract class ConsentResult {
         private protected ConsentResult() { }
     }
@@ -12,6 +12,17 @@ namespace RiseOn.Consent {
         public ConsentState State { get; }
 
         internal ConsentSucceeded(ConsentState state) {
+            State = state;
+        }
+    }
+
+    /// <summary>
+    /// The consent flow does not run on this platform, only on Android, on iOS and in the Editor: nobody was asked, so the flow completed at once with nothing allowed (no ads, no tracking, an opt-out of data sale).
+    /// </summary>
+    public sealed class ConsentUnsupported : ConsentResult {
+        public ConsentState State { get; }
+
+        internal ConsentUnsupported(ConsentState state) {
             State = state;
         }
     }
